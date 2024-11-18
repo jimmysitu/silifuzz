@@ -22,3 +22,12 @@ build --define absl=1
 
 build --copt=-fPIC
 build --linkopt -fuse-ld=lld
+
+# JM: Fix local build environment on Ubuntu 20.04
+build --cxxopt='-I/usr/include/c++/13'
+build --cxxopt='-I/usr/include/x86_64-linux-gnu/c++/13'
+build --linkopt='-L/usr/lib/gcc/x86_64-linux-gnu/13'
+   
+   
+build --action_env=http_proxy=http://127.0.0.1:1080
+build --action_env=https_proxy=http://127.0.0.1:1080
