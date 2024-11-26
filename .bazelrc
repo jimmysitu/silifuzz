@@ -26,3 +26,8 @@ build --linkopt -fuse-ld=lld
 # JM: Fix local build environment
 build --action_env=http_proxy=http://127.0.0.1:1080
 build --action_env=https_proxy=http://127.0.0.1:1080
+
+# For ubuntu 20.04 only
+build --cxxopt='-I/usr/include/c++/11'
+build --cxxopt='-I/usr/include/x86_64-linux-gnu/c++/11'
+build --linkopt='-L/usr/lib/gcc/x86_64-linux-gnu/11'
