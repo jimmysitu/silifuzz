@@ -29,7 +29,7 @@ apt install -y curl gnupg apt-transport-https ca-certificates
 
 # Add Bazel distribution URI as a package source following:
 # https://docs.bazel.build/versions/main/install-ubuntu.html
-curl --socks5 192.168.31.224:1088 -fsSL https://bazel.build/bazel-release.pub.gpg \
+curl --socks5 127.0.0.1:1088 -fsSL https://bazel.build/bazel-release.pub.gpg \
   | gpg --dearmor > /etc/apt/trusted.gpg.d/bazel.gpg
 echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" \
   | tee /etc/apt/sources.list.d/bazel.list
