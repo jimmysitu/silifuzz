@@ -49,7 +49,8 @@ If all tests pass, Silifuzz is ready to use.
 cd "${SILIFUZZ_SRC_DIR}"
 COV_FLAGS_FILE="$(bazel info output_base)/external/com_google_fuzztest/centipede/clang-flags.txt"
 bazel build -c opt --copt=-UNDEBUG --dynamic_mode=off \
-  --per_file_copt=unicorn/.*@$(xargs < "${COV_FLAGS_FILE}" |sed -e 's/,/\\,/g' -e 's/ /,/g') @//proxies:unicorn_x86_64
+  --per_file_copt=unicorn/.*@$(xargs < "${COV_FLAGS_FILE}" |sed -e 's/,/\\,/g' -e 's/ /,/g') \
+  @//proxies:unicorn_x86_64
 ```
 
 ### Build Centipede
@@ -80,6 +81,11 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 #### Introduction to Centipede
 - Introduction to Centipede can be found [here](https://github.com/google/fuzztest/blob/main/centipede/README.md)
 
+- Centipede is now part of libFuzzer, a complete tutorial of libFuzzer can be found [here](https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md)
+
+The output of Centipede is corpus, which is a set of inputs that have been successfully fuzzed.
+- For more information about corpus, please refer to [here](https://llvm.org/docs/LibFuzzer.html#corpus)
+
 ##### Corpus Distillation
 ```bash
 "${SILIFUZZ_BIN_DIR}/external/com_google_fuzztest/centipede/centipede" \
@@ -87,3 +93,48 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
   --workdir=/tmp/wd \
   --distill --num_threads=1 --total_shards=4
 ```
+
+## Silifuzz Framework
+
+<div align="center" style="width: 80%">
+
+```mermaid
+graph TD
+
+subgraph HOST[Host]
+    subgraph FE[Fuzzing Engine: Centipede]
+        subgraph PROXIES[Proxies]
+            UNICORN[Unicorn Proxy]
+            XED[XED Proxy]
+        end
+        style PROXIES fill:#ccffcc
+    end
+
+	subgraph SNAPSHOT[<div style="margin-right:20em">Snapshot</div>]
+	    INIT(Initial)
+	    CORPUS(Corpus)
+	    EXCEPT(Exception)
+	end
+    PROXIES --> CORPUS
+end 
+
+subgraph CLIENT[Client]
+    direction LR
+    subgraph MEM[Memory]
+        SNAP("[SNAP]Snapshot loaded in memory")
+    end
+
+    subgraph ORCHESTRATOR[Orchestrator]
+        SNAP --> RUNNER_0(Runner0)
+        SNAP --> RUNNER_1(Runner1)
+        SNAP --> RUNNER_DOT(......)
+        SNAP --> RUNNER_N(RunnerN)
+    end
+end
+style HOST fill:none, stroke:#000, stroke-width:1px, stroke-dasharray:5,5
+style CLIENT fill:none, stroke:#000, stroke-width:1px, stroke-dasharray:5,5
+
+SNAPSHOT ---> CLIENT
+```
+
+</div>
