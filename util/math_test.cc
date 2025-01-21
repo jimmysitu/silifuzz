@@ -12,26 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./util/reg_groups.h"
+#include "./util/math.h"
 
-#include "./util/aarch64/sve.h"
-#include "./util/arch.h"
-#include "./util/reg_group_set.h"
+#include "./util/checks.h"
+#include "./util/nolibc_gunit.h"
 
 namespace silifuzz {
+namespace {
 
-RegisterGroupSet<AArch64> GetCurrentPlatformRegisterGroups() {
-  RegisterGroupSet<AArch64> groups;
-  groups.SetGPR(true).SetFPR(true).SetSVEVectorWidth(GetSVEVectorWidthGlobal());
-  return groups;
+TEST(Math, RoundUpToPowerOfTwo) {
+  int divisor = 1 << 8;
+  for (int i = 0; i < divisor * 10; ++i) {
+    int rounded = RoundUpToPowerOfTwo(i, divisor);
+    CHECK_EQ(rounded % divisor, 0);
+    if (i % divisor == 0) {
+      CHECK_EQ(i, rounded);
+    } else {
+      CHECK_LT(i, rounded);
+    }
+  }
 }
 
-RegisterGroupSet<AArch64> GetCurrentPlatformChecksumRegisterGroups() {
-  RegisterGroupSet<AArch64> groups = GetCurrentPlatformRegisterGroups();
-
-  // These are always recorded in snapshots and are not included in checksum.
-  groups.SetGPR(false).SetFPR(false);
-  return groups;
-}
-
+}  // namespace
 }  // namespace silifuzz
+
+NOLIBC_TEST_MAIN({ RUN_TEST(Math, RoundUpToPowerOfTwo); })
