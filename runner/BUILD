@@ -323,6 +323,7 @@ cc_library(
         "@com_google_absl//absl/strings",
     ] + select({
         "@silifuzz//build_defs/platform:aarch64": [
+            "@silifuzz//instruction:static_insn_filter",
         ],
         "@silifuzz//build_defs/platform:x86_64": [
             "@silifuzz//instruction:decoded_insn",
@@ -369,6 +370,7 @@ cc_library(
     srcs = ["snap_maker.cc"],
     hdrs = ["snap_maker.h"],
     deps = [
+        ":disassembling_snap_tracer",
         "@silifuzz//common:mapped_memory_map",
         "@silifuzz//common:memory_bytes_set",
         "@silifuzz//common:memory_mapping",
@@ -392,13 +394,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-    ] + select({
-        "@silifuzz//build_defs/platform:aarch64": [
-        ],
-        "@silifuzz//build_defs/platform:x86_64": [
-            ":disassembling_snap_tracer",
-        ],
-    }),
+    ],
 )
 
 cc_library(
