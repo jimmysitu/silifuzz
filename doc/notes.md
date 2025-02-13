@@ -44,6 +44,13 @@ bazel test ...
 ```
 If all tests pass, Silifuzz is ready to use.
 
+### Build Tools
+```bash
+bazel build -c opt @silifuzz//tools:{snap_corpus_tool,fuzz_filter_tool,snap_tool,silifuzz_platform_id,simple_fix_tool_main} \
+     @silifuzz//runner:reading_runner_main_nolibc \
+     @silifuzz//orchestrator:silifuzz_orchestrator_main
+```
+
 ### Build Unicorn Proxy
 ```bash
 cd "${SILIFUZZ_SRC_DIR}"
@@ -93,6 +100,17 @@ The output of Centipede is corpus, which is a set of inputs that have been succe
   --workdir=/tmp/wd \
   --distill --num_threads=1 --total_shards=4
 ```
+
+#### Create Runnable Corpus
+
+```bash
+# Convert fuzzing result corpus.* into a 10-shard runnable corpus for the current architecture
+"${SILIFUZZ_BIN_DIR}/tools/simple_fix_tool_main" \
+  --num_output_shards=10 \
+  --output_path_prefix=/tmp/wd/runnable-corpus \
+  /tmp/wd/corpus.*
+```
+
 
 ## Silifuzz Framework
 
