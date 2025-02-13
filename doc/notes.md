@@ -81,9 +81,11 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 #### Introduction to Centipede
 - Introduction to Centipede can be found [here](https://github.com/google/fuzztest/blob/main/centipede/README.md)
 
-- Centipede is now part of libFuzzer, a complete tutorial of libFuzzer can be found [here](https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md)
+- Centipede is fully compatible with libFuzzer, a complete tutorial of libFuzzer can be found [here](https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md)
+  - An introduction to libFuzzer can be found [here](https://llvm.org/docs/LibFuzzer.html), which introduces the concept of centipede.
 
-The output of Centipede is corpus, which is a set of inputs that have been successfully fuzzed.
+
+- The output of Centipede is corpus, which is a set of inputs that have been successfully fuzzed.
 - For more information about corpus, please refer to [here](https://llvm.org/docs/LibFuzzer.html#corpus)
 
 ##### Corpus Distillation
