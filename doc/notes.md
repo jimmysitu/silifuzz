@@ -34,7 +34,7 @@ And set `SILIFUZZ_BIN_DIR` to the path of the binaries, which is `/app/bazel-bin
 export SILIFUZZ_BIN_DIR=/app/bazel-bin
 ```
 
-### 1.3. Build silifuzz
+### 1.3. Build Silifuzz
 
 Build all the targets and test silifuzz
 ```bash
