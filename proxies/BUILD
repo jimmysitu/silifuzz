@@ -118,3 +118,38 @@ cc_binary(
         "@com_google_fuzztest//centipede:centipede_runner",
     ],
 )
+
+cc_library(
+    name = "xed_x86_64_lib",
+    srcs = ["xed_x86_64.cc"],
+    deps = [
+        "@silifuzz//instruction:xed_util",  # Provides additional XED utilities.
+        "@libxed//:xed",
+        # (Add any additional deps required by xed_x86_64.cc here.)
+    ],
+    alwayslink = True,
+)
+
+cc_test(
+    name = "xed_x86_64_test",
+    size = "medium",
+    srcs = ["xed_x86_64_test.cc"],
+    deps = [
+        ":xed_x86_64_lib",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "xed_x86_64",
+    testonly = True,
+    linkopts = [
+        "-ldl",
+        "-lrt",
+        "-lpthread",
+    ],
+    deps = [
+        ":xed_x86_64_lib",
+        "@com_google_fuzztest//centipede:centipede_runner",
+    ],
+)

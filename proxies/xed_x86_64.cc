@@ -17,14 +17,15 @@
 #include <cstdio>
 
 // Assume the XED headers are available.
-#include "xed-interface.h"
+#include "third_party/libxed/xed-interface.h"
+#include "instruction/xed_util.h"
 
 extern "C" {
 
 // Initialize the XED library tables once before any decoding.
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
   // Initialize XED tables used for decoding.
-  xed_tables_init();
+  silifuzz::InitXedIfNeeded();
   return 0;
 }
 
@@ -50,7 +51,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     // Optionally report decoding errors.
     // For example:
     // fprintf(stderr, "XED decode error: %s\n", xed_error_enum_t2str(xed_error));
-    return 0;
+    return -1;
   }
 
   // (Optional) Further processing could be done using the decoded instruction.
