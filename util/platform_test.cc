@@ -14,9 +14,11 @@
 
 #include "./util/platform.h"
 
+#include <cstdint>
 #include <string>
 
 #include "gtest/gtest.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
@@ -47,25 +49,100 @@ TEST(PlatformTest, PlatformArchitecture) {
   for (int i = proto::PlatformId_MIN; i < proto::PlatformId_MAX; ++i) {
     if (proto::PlatformId_IsValid(i)) {
       const std::string& enum_name = proto::PlatformId_Name(i);
+      ArchitectureId arch = PlatformArchitecture(static_cast<PlatformId>(i));
       if (absl::StrContains(enum_name, "RESERVED") ||
           static_cast<PlatformId>(i) == PlatformId::kUndefined) {
-        continue;
+        EXPECT_EQ(arch, ArchitectureId::kUndefined)
+            << "Platform " << enum_name
+            << " unexpectedly mapped to a defined architecture";
+      } else {
+        EXPECT_TRUE(arch == ArchitectureId::kX86_64 ||
+                    arch == ArchitectureId::kAArch64)
+            << "Platform " << enum_name
+            << " doesn't map to a valid architecture";
       }
-      ArchitectureId arch = PlatformArchitecture(static_cast<PlatformId>(i));
-      EXPECT_TRUE(arch == ArchitectureId::kX86_64 ||
-                  arch == ArchitectureId::kAArch64)
-          << "Platform " << enum_name << " doesn't map to a valid architecture";
     }
   }
 }
 
 TEST(PlatformTest, PlatformNameMatchesEnum) {
+  // `kAny` and `kNonExistent` are meta-values that won't be persisted in the
+  // proto representation.
+  EXPECT_EQ(proto::PlatformId_MAX, static_cast<int>(kMaxPlatformId) - 2)
+      << "snapshot.proto is not up to date with the latest changes in platform "
+         "ids.";
   for (int i = proto::PlatformId_MIN; i < proto::PlatformId_MAX; ++i) {
     if (proto::PlatformId_IsValid(i)) {
       std::string internal_name = absl::StrReplaceAll(
           absl::AsciiStrToUpper(EnumStr(static_cast<PlatformId>(i))),
           {{"-", "_"}});
       EXPECT_EQ(internal_name, proto::PlatformId_Name(i));
+    }
+  }
+}
+
+TEST(PlatformTest, EnumNameMap) {
+  EXPECT_EQ(EnumNameMap<PlatformId>[static_cast<int>(kMaxPlatformId)],
+            "NON-EXISTENT-PLATFORM")
+      << "EnumNameMap is not up to date with the latest changes in platform "
+         "ids.";
+}
+
+struct CpuId {
+  uint32_t family;
+  uint32_t model;
+  uint32_t stepping;
+};
+
+// Note: these maps only provide 1 example cpu id of each platform as a simple
+// check. This test primarily guards against us forgetting to add a new platform
+// mapping to this file and does not cover all cases.
+const absl::flat_hash_map<PlatformId, CpuId> kAmdPlatformToCpuId = {
+    {PlatformId::kAmdRome, {23, 48, 0}},
+    {PlatformId::kAmdMilan, {25, 10, 0}},
+    {PlatformId::kAmdGenoa, {25, 16, 0}},
+    {PlatformId::kAmdRyzenV3000, {25, 64, 0}},
+    {PlatformId::kAmdSiena, {25, 160, 0}},
+};
+const absl::flat_hash_map<PlatformId, CpuId> kIntelPlatformToCpuId = {
+    {PlatformId::kIntelHaswell, {6, 60, 0}},
+    {PlatformId::kIntelBroadwell, {6, 61, 0}},
+    {PlatformId::kIntelIvybridge, {6, 62, 0}},
+    {PlatformId::kIntelSkylake, {6, 85, 1}},
+    {PlatformId::kIntelCascadelake, {6, 85, 5}},
+    {PlatformId::kIntelIcelake, {6, 106, 0}},
+    {PlatformId::kIntelCoffeelake, {6, 142, 0}},
+    {PlatformId::kIntelSapphireRapids, {6, 143, 0}},
+    {PlatformId::kIntelAlderlake, {6, 151, 0}},
+    {PlatformId::kIntelGraniteRapids, {6, 173, 0}},
+    {PlatformId::kIntelEmeraldRapids, {6, 207, 0}},
+};
+
+TEST(PlatformUtilsX86, AmdPlatformIdFromCpuId) {
+  for (const auto& [platform, cpu_id] : kAmdPlatformToCpuId) {
+    EXPECT_EQ(internal::AmdPlatformIdFromCpuId(cpu_id.family, cpu_id.model,
+                                               cpu_id.stepping),
+              platform);
+  }
+}
+
+TEST(PlatformUtilsX86, IntelPlatformIdFromCpuId) {
+  for (const auto& [platform, cpu_id] : kIntelPlatformToCpuId) {
+    EXPECT_EQ(internal::IntelPlatformIdFromCpuId(cpu_id.family, cpu_id.model,
+                                                 cpu_id.stepping),
+              platform);
+  }
+}
+
+TEST(PlatformUtilsX86, AllX86PlatformsAreMapped) {
+  for (int i = 0; i <= static_cast<int>(kMaxPlatformId); ++i) {
+    PlatformId platform = static_cast<PlatformId>(i);
+    if (PlatformArchitecture(platform) == ArchitectureId::kX86_64) {
+      EXPECT_TRUE(kAmdPlatformToCpuId.contains(platform) ||
+                  kIntelPlatformToCpuId.contains(platform))
+          << "X86-64 platform " << EnumStr(platform)
+          << " is not mapped to a CPU ID in "
+             "silifuzz/util/x86_64/platform.cc.";
     }
   }
 }
