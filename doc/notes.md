@@ -110,8 +110,18 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 "${SILIFUZZ_BIN_DIR}/tools/simple_fix_tool_main" \
   --num_output_shards=10 \
   --output_path_prefix=/tmp/wd/runnable-corpus \
+  --runner=${SILIFUZZ_BIN_DIR}/runner/reading_runner_main_nolibc \
   /tmp/wd/corpus.*
 ```
+
+#### Scan All Core of a CPU
+
+```bash
+ls -1 /tmp/wd/runnable-corpus.* > /tmp/shard_list
+${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
+     --runner=${SILIFUZZ_BIN_DIR}/runner/reading_runner_main_nolibc \
+     --shard_list_file=/tmp/shard_list
+
 
 
 ## Silifuzz Framework
