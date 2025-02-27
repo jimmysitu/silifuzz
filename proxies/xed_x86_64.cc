@@ -16,14 +16,11 @@
 #include <cstdint>
 #include <cstdio>
 
-// Assume the XED headers are available.
-#include "third_party/libxed/xed-interface.h"
 #include "instruction/xed_util.h"
 
-extern "C" {
 
 // Initialize the XED library tables once before any decoding.
-int LLVMFuzzerInitialize(int *argc, char ***argv) {
+extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   // Initialize XED tables used for decoding.
   silifuzz::InitXedIfNeeded();
   return 0;
@@ -31,7 +28,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 
 // LLVMFuzzerTestOneInput uses XED to decode an x86-64 instruction from the
 // fuzzing input. This proxy simply decodes an instruction and returns.
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // If the input is empty, exit early.
   if (size == 0)
     return 0;
@@ -59,5 +56,3 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   return 0;
 }
-
-}  // extern "C" 
