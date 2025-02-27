@@ -122,7 +122,7 @@ ${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
      --runner=${SILIFUZZ_BIN_DIR}/runner/reading_runner_main_nolibc \
      --shard_list_file=/tmp/shard_list
 
-
+```
 
 ## Silifuzz Framework
 
@@ -168,3 +168,21 @@ SNAPSHOT ---> CLIENT
 ```
 
 </div>
+
+### Unicorn Proxy
+
+#### Before Running Unicorn
+- `tracer.InitSnippet()`, initial snapshot for Unicorn
+- `tracer.SetInstructionCallback()`, setup callback for each instruction run in Unicorn
+  - It disassembles the next 16 bytes with XED
+  - Check if the instruction is still in the range of code snippet
+ 
+
+
+#### Running Unicorn
+- `tracer.Run()`, call Unicorn and run instructions
+  - Callback executes after every instruction
+  - Stop when callback find that instruction reach the end of code address
+  - Or stop when get to max instruction limit
+
+#### After Running Unicorn
