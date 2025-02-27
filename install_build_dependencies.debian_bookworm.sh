@@ -40,3 +40,4 @@ apt install --no-install-recommends -y git bazel bazel-7.4.1 libssl-dev libzstd-
 
 # Install useful tools.
 apt install --no-install-recommends -y vim tree file
+apt install -y build-essential gcc g++ gdb make cmake git
