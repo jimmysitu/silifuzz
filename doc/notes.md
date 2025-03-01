@@ -178,7 +178,6 @@ SNAPSHOT ---> CLIENT
   - Check if the instruction is still in the range of code snippet
  
 
-
 #### Running Unicorn
 - `tracer.Run()`, call Unicorn and run instructions
   - Callback executes after every instruction
@@ -186,3 +185,18 @@ SNAPSHOT ---> CLIENT
   - Or stop when get to max instruction limit
 
 #### After Running Unicorn
+
+
+#### User Feature Generator
+- `feature_gen.BeforeInput(features)`, reset features
+- `feature_gen.BeforeExecution(registers)`, record initial states
+- `feature_gen.AfterInstruction()`, runs after every instruction
+  - Record instruction toggle and register toggle
+- `feature_gen.AfterExecution()`, runs after code snippet is done
+  - Emit global register toggle feature
+  - Emit overall register different feature
+  - Emit pre-instruction feature, including
+    - Instruction id
+    - Pre-instruction register toggle
+- `feature_gen.FinalMemory()`
+  - Memory changes in data1 and data2
