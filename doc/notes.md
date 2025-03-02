@@ -231,8 +231,13 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   }
   ```
 
-- `FixToolWorker()`
-  
+- `FixToolWorker()`, processes its assigned blobs
+  - Converting each blob into a snapshot, using `InstructionsToSnapshot()`
+  - Setting a unique snapshot ID, using `InstructionsToSnapshotId()`
+  - Normalizing the snapshot, using `NormalizeSnapshot()`
+  - Rewriting the initial state, using `RewriteInitialState()`
+  - Applying any additional fixups as specified by the options, using `FixupSnapshot()`
+  - Converting to a relocatable snapshot, using `Snapify()`
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
