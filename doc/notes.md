@@ -185,6 +185,7 @@ SNAPSHOT ---> CLIENT
   - Or stop when get to max instruction limit
 
 #### After Running Unicorn
+- `tracer.ReadMemory()`, get memory image after execution
 
 
 #### User Feature Generator
@@ -200,3 +201,39 @@ SNAPSHOT ---> CLIENT
     - Pre-instruction register toggle
 - `feature_gen.FinalMemory()`
   - Memory changes in data1 and data2
+
+
+### Simple Fix Tool
+The tool is designed to process raw instruction sequences from Centipede's corpus, convert them into snapshots, and then partition these snapshots into shards for further use.
+
+- `FixupCorpus()` is a top-level function in the simple fix tool. Its job is to
+  - Take raw instruction blobs (such as those coming from Centipede), by `ReadUniqueCentipedeBlobs()` 
+  - Process and convert them into “snapshots” (a more structured, executable representation), using `MakeSnapshotsFromBlobs()`
+  - Partition these snapshots into output shards, using `PartitionSnapshots()`
+  - The resulting relocatable corpus is then ready for use by other tools, for example, runners that execute these snapshots
+
+- `ReadUniqueCentipedeBlobs()`, reads multiple input blob files, extracts all the instruction blobs, and removes any duplicates to create a clean, deduplicated set of instruction sequences for further processing.
+  - Using SHA1 to deduplicate blobs
+  - Return a vector of unique blobs
+
+- `MakeSnapshotsFromBlobs()`, transforms raw instruction sequences (blobs) into structured Snapshot objects that can be executed.
+  - Determines how many worker threads to use based on the provided options
+  - Divides the input blobs evenly among the workers using `PartitionEvenly()`
+  - Starts a separate thread to monitor and display progress during processing, using `MakeProgressMonitor()`
+  - Launches multiple threads to process blobs in parallel
+  ```c++
+  std::vector<FixToolWorkerArgs> worker_args;
+  // ... prepare arguments
+  std::vector<std::thread> workers;
+  // ... create worker threads
+  for (size_t i = 0; i < num_workers; ++i) {
+    workers.emplace_back(FixToolWorker, std::ref(worker_args[i]));
+  }
+  ```
+
+- `FixToolWorker()`
+  
+
+- `PartitionSnapshots()`, 
+  - Partitions the snapshots into output shards.
+  - The resulting relocatable corpus is then ready for use by other tools, for example, runners that execute these snapshots
