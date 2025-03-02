@@ -238,7 +238,13 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Rewriting the initial state, using `RewriteInitialState()`
   - Applying any additional fixups as specified by the options, using `FixupSnapshot()`
   - Converting to a relocatable snapshot, using `Snapify()`
+  - Returns the final collection of valid snapshots
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
   - The resulting relocatable corpus is then ready for use by other tools, for example, runners that execute these snapshots
+
+### Orchestrator
+
+
+### Runner
