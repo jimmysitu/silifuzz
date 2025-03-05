@@ -118,10 +118,11 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 
 ```bash
 ls -1 /tmp/wd/runnable-corpus.* > /tmp/shard_list
+echo 'version: "corpus_version"' > corpus_metadata
 ${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
      --runner=${SILIFUZZ_BIN_DIR}/runner/reading_runner_main_nolibc \
-     --shard_list_file=/tmp/shard_list
-
+     --shard_list_file=/tmp/shard_list \
+     --corpus_metadata_file=corpus_metadata
 ```
 
 ## Silifuzz Framework
@@ -239,6 +240,10 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Applying any additional fixups as specified by the options, using `FixupSnapshot()`
   - Converting to a relocatable snapshot, using `Snapify()`
   - Returns the final collection of valid snapshots
+
+- `RewriteInitialState()`, 
+  - Edit initial state of snapshot
+  - Mostly for X86_64 XMM bug fix
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
