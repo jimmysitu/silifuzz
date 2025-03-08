@@ -121,7 +121,6 @@ ls -1 /tmp/wd/runnable-corpus.* > /tmp/shard_list
 ${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
      --runner=${SILIFUZZ_BIN_DIR}/runner/reading_runner_main_nolibc \
      --shard_list_file=/tmp/shard_list
-
 ```
 
 ## Silifuzz Framework
@@ -240,11 +239,15 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Converting to a relocatable snapshot, using `Snapify()`
   - Returns the final collection of valid snapshots
 
+- `NormalizeSnapshot()`, 
+
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
   - The resulting relocatable corpus is then ready for use by other tools, for example, runners that execute these snapshots
 
-### Orchestrator
-
-
 ### Runner
+
+
+
+
+### Orchestrator
