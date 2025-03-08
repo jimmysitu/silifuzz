@@ -241,9 +241,14 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Converting to a relocatable snapshot, using `Snapify()`
   - Returns the final collection of valid snapshots
 
+- `NormalizeSnapshot()`
+
+
 - `RewriteInitialState()`, 
   - Edit initial state of snapshot
   - Mostly for X86_64 XMM bug fix
+
+- `FixupSnapshot()`
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
