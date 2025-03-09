@@ -248,7 +248,24 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Edit initial state of snapshot
   - Mostly for X86_64 XMM bug fix
 
-- `FixupSnapshot()`
+- `FixupSnapshot()`, 
+  - Remakes and verifies snapshot with `RemakeAndVerify()`
+
+- `RemakeAndVerify()`,
+  - Setup configuration options
+  - Calls `MakeSnapshot()` to transform snapshot into a form that can be executed reliably
+  - `MakeSnapshot()`, Creates SnapMaker and calls `SnapMaker::Make()`, and records the end state with `SnapMaker::RecordEndState()`
+
+- `SnapMaker::Make()`, core function of simple fix tool that transforms a raw snapshot into a form that can be executed reliably
+  - Snapshot has a well-defined end state
+  - All memory mappings to execute without faults
+  - All run work are done in `MakeLoop()`, which
+    - Executes the snapshot
+    - Adds memory mappings as needed to handle page faults
+    - Continues until it reaches a stopping condition
+  - Check Stop Reason: After `MakeLoop()` completes, it checks if the stop reason is `kEndpoint`. If not, the snapshot isn't compatible with the Snap format and an error is returned.
+
+- `SnapMaker::RecordEndState()`,
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
