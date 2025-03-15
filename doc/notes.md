@@ -44,14 +44,14 @@ bazel test ...
 ```
 If all tests pass, Silifuzz is ready to use.
 
-### Build Tools
+### 1.4. Build Tools
 ```bash
 bazel build -c opt @silifuzz//tools:{snap_corpus_tool,fuzz_filter_tool,snap_tool,silifuzz_platform_id,simple_fix_tool_main} \
      @silifuzz//runner:reading_runner_main_nolibc \
      @silifuzz//orchestrator:silifuzz_orchestrator_main
 ```
 
-### Build Unicorn Proxy
+### 1.5. Build Unicorn Proxy
 ```bash
 cd "${SILIFUZZ_SRC_DIR}"
 COV_FLAGS_FILE="$(bazel info output_base)/external/com_google_fuzztest/centipede/clang-flags.txt"
@@ -60,7 +60,7 @@ bazel build -c opt --copt=-UNDEBUG --dynamic_mode=off \
   @//proxies:unicorn_x86_64
 ```
 
-### Build Centipede
+### 1.6. Build Centipede
 ```bash
 bazel build -c opt @com_google_fuzztest//centipede:centipede
 ```
@@ -75,7 +75,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
   --workdir=/tmp/wd \
   --j=4 --num_runs=1000
 ```
-#### Introduction to Unicorn
+#### 2.1.1. Introduction to Unicorn
 - A quick start guide to Unicorn engine can be found [here](https://www.unicorn-engine.org/docs/tutorial.html)
 
 - Unicorn is the fuzz target, for more information about fuzz target, please refer to [here](https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md)
@@ -85,7 +85,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
   ```
 
 
-#### Introduction to Centipede
+#### 2.1.2. Introduction to Centipede
 - Introduction to Centipede can be found [here](https://github.com/google/fuzztest/blob/main/centipede/README.md)
 
 - Centipede is fully compatible with libFuzzer, a complete tutorial of libFuzzer can be found [here](https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md)
@@ -95,7 +95,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 - The output of Centipede is corpus, which is a set of inputs that have been successfully fuzzed.
 - For more information about corpus, please refer to [here](https://llvm.org/docs/LibFuzzer.html#corpus)
 
-##### Corpus Distillation
+##### 2.1.2.1. Corpus Distillation
 ```bash
 "${SILIFUZZ_BIN_DIR}/external/com_google_fuzztest/centipede/centipede" \
   --binary="${SILIFUZZ_BIN_DIR}/proxies/unicorn_x86_64" \
@@ -103,7 +103,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
   --distill --num_threads=1 --total_shards=4
 ```
 
-#### Create Runnable Corpus
+### 2.2. Create Runnable Corpus
 
 ```bash
 # Convert fuzzing result corpus.* into a 10-shard runnable corpus for the current architecture
@@ -114,7 +114,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
   /tmp/wd/corpus.*
 ```
 
-#### Scan All Core of a CPU
+### 2.3. Scan All Core of a CPU
 
 ```bash
 ls -1 /tmp/wd/runnable-corpus.* > /tmp/shard_list
@@ -125,7 +125,7 @@ ${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
      --corpus_metadata_file=corpus_metadata
 ```
 
-## Silifuzz Framework
+## 3. Silifuzz Framework
 
 <div align="center" style="width: 80%">
 
@@ -170,26 +170,26 @@ SNAPSHOT ---> CLIENT
 
 </div>
 
-### Unicorn Proxy
+### 3.1. Unicorn Proxy
 
-#### Before Running Unicorn
+#### 3.1.1. Before Running Unicorn
 - `tracer.InitSnippet()`, initial snapshot for Unicorn
 - `tracer.SetInstructionCallback()`, setup callback for each instruction run in Unicorn
   - It disassembles the next 16 bytes with XED
   - Check if the instruction is still in the range of code snippet
  
 
-#### Running Unicorn
+#### 3.1.2. Running Unicorn
 - `tracer.Run()`, call Unicorn and run instructions
   - Callback executes after every instruction
   - Stop when callback find that instruction reach the end of code address
   - Or stop when get to max instruction limit
 
-#### After Running Unicorn
+#### 3.1.3. After Running Unicorn
 - `tracer.ReadMemory()`, get memory image after execution
 
 
-#### User Feature Generator
+#### 3.1.4. User Feature Generator
 - `feature_gen.BeforeInput(features)`, reset features
 - `feature_gen.BeforeExecution(registers)`, record initial states
 - `feature_gen.AfterInstruction()`, runs after every instruction
@@ -204,7 +204,7 @@ SNAPSHOT ---> CLIENT
   - Memory changes in data1 and data2
 
 
-### Simple Fix Tool
+### 3.2. Simple Fix Tool
 The tool is designed to process raw instruction sequences from Centipede's corpus, convert them into snapshots, and then partition these snapshots into shards for further use.
 
 - `FixupCorpus()` is a top-level function in the simple fix tool. Its job is to
@@ -242,7 +242,7 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
   - Returns the final collection of valid snapshots
 
 - `NormalizeSnapshot()`
-
+  - TBD
 
 - `RewriteInitialState()`, 
   - Edit initial state of snapshot
@@ -265,15 +265,26 @@ The tool is designed to process raw instruction sequences from Centipede's corpu
     - Continues until it reaches a stopping condition
   - Check Stop Reason: After `MakeLoop()` completes, it checks if the stop reason is `kEndpoint`. If not, the snapshot isn't compatible with the Snap format and an error is returned.
 
-- `SnapMaker::RecordEndState()`,
+- `SnapMaker::RecordEndState()`, 
+  - Executing the snapshot again and record the end state
 
 - `PartitionSnapshots()`, 
   - Partitions the snapshots into output shards.
-  - The resulting relocatable corpus is then ready for use by other tools, for example, runners that execute these snapshots
+  - Each shard is a set of snapshots, which do not have any overlapping memory mappings
+  - The resulting relocatable corpus is then ready for use by other tools
 
-### Runner
+- `WriteOutputFiles()`, 
+  - Writes snapshots in `shards` into relocatable corpora by `GenerateRelocatableSnaps()`
+  - Each corpus has
+    - a path `output_path_prefix` + '.' + <shard index>.
+    - Updates fix tool statistics in `counters`.
+
+- `GenerateRelocatableSnaps()`, 
+  - TBD
+
+### 3.3. Runner
 
 
 
 
-### Orchestrator
+### 3.4. Orchestrator
