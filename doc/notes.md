@@ -6,11 +6,15 @@
 git clone https://github.com/jimmysitu/silifuzz.git
 git checkout docs
 SILIFUZZ_SRC_DIR=`pwd`
-docker run -it --tty --security-opt seccomp=unconfined \
+docker run -it --tty --security-opt seccomp=unconfined --ulimit memlock=-1:-1 \
     --mount type=bind,source=${SILIFUZZ_SRC_DIR},target=/app \
     --name silifuzz-debian-bookworm --network host \
     debian:bookworm /bin/bash
 ```
+
+- Add `--ulimit memlock=-1:-1` to ensure mmap has enough memory
+  - Ensure *max locked memory* on host machine is set to unlimited too, with command `ulimit -a`
+
 
 ### 1.2. Install build dependencies and set environment variables
 
@@ -116,6 +120,7 @@ bazel build -c opt @com_google_fuzztest//centipede:centipede
 
 ### 2.3. Scan All Core of a CPU
 
+Fuzz all cores with runnable corpus for 30 seconds
 ```bash
 ls -1 /tmp/wd/runnable-corpus.* > /tmp/shard_list
 echo 'version: "corpus_version"' > corpus_metadata
@@ -124,6 +129,14 @@ ${SILIFUZZ_BIN_DIR}/orchestrator/silifuzz_orchestrator_main --duration=30s \
      --shard_list_file=/tmp/shard_list \
      --corpus_metadata_file=corpus_metadata
 ```
+
+#### Trouble Shooting
+- `Snapshot [...] failed, outcome = 5`
+  - It usually causes by *long* runtime corpus
+  - Extend the runtime budget with `--per_runner_cpu_time_budget=20s`, default was 10s
+  - Decrease number of iteration with `--num_iterations=1000000`, default was 5000000
+  
+  
 
 ## 3. Silifuzz Framework
 
